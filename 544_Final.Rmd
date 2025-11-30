@@ -3,3 +3,44 @@ title: "544_Final"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+```
+
+
+
+```{r}
+weather_county <- read.csv("/Users/breannabrown/Desktop/countytotals_extremeweather.csv")
+unemployment_county <- read.csv("/Users/breannabrown/Desktop/unemployment_wide.csv")
+unemployment_county <- unemployment_county %>%
+  rename(County = Area_Name)
+
+weather_state <- read.csv("/Users/breannabrown/Desktop/statetotals_extremeweather.csv")
+weather_state <- weather_state %>%
+                filter(!is.na(State.Code))
+
+unemployment_state <- read.csv("/Users/breannabrown/Desktop/unemployment_statetotals.csv")
+unemployment_state <- unemployment_state %>%
+                      filter(FIPS_Code != 0) %>%
+                      select(-State) %>%
+                      rename(State = Area_Name)
+
+county_full <- inner_join(weather_county, unemployment_county, by = "County")
+
+county_full <- county_full %>%
+            select(-Population.y, -State.y, -Census.Region.Code, -FIPS_Code) %>%
+            rename(State = State.x) %>%
+            rename(Population = Population.x)
+
+#county_full <- county_full %>%
+#            mutate(Weather.Deaths = Heat.Deaths + Cold.Deaths)
+#need to impute before this
+
+state_full <- inner_join(weather_state, unemployment_state, by = "State")
+state_full <- state_full %>% 
+              select(-Population.x, - Census.Region.Code)
+
+
+```
