@@ -1,0 +1,119 @@
+"Census.Region","Census.Region.Code","State","State.Code","Total.State.Cold.Deaths","Population.x","Total.State.Heat.Deaths","Population.y"
+"Census Region 1: Northeast","CENS-R1","Connecticut",9,"46",14300555,"Suppressed",21543936
+"Census Region 1: Northeast","CENS-R1","Maine",23,"53",8186066,"Suppressed",8186066
+"Census Region 1: Northeast","CENS-R1","Massachusetts",25,"106",41656322,"19",41656322
+"Census Region 1: Northeast","CENS-R1","New Hampshire",33,"45",8268721,"Suppressed",8268721
+"Census Region 1: Northeast","CENS-R1","Rhode Island",44,"19",6459107,"Suppressed",6459107
+"Census Region 1: Northeast","CENS-R1","Vermont",50,"37",3813733,"Suppressed",3813733
+"Census Region 1: Northeast","CENS-R1","New Jersey",34,"112",54492751,"37",54492751
+"Census Region 1: Northeast","CENS-R1","New York",36,"360",117416826,"73",117416826
+"Census Region 1: Northeast","CENS-R1","Pennsylvania",42,"347",77290050,"66",77290050
+"Census Region 1: Northeast","CENS-R1","",NA,"1125",331884131,"220",339127512
+"Census Region 2: Midwest","CENS-R2","Illinois",17,"316",75803621,"69",75803621
+"Census Region 2: Midwest","CENS-R2","Indiana",18,"161",40680271,"57",40680271
+"Census Region 2: Midwest","CENS-R2","Michigan",26,"352",60071512,"34",60071512
+"Census Region 2: Midwest","CENS-R2","Ohio",39,"270",70393769,"55",70393769
+"Census Region 2: Midwest","CENS-R2","Wisconsin",55,"231",35168059,"50",35168059
+"Census Region 2: Midwest","CENS-R2","Iowa",19,"112",19075376,"26",19075376
+"Census Region 2: Midwest","CENS-R2","Kansas",20,"68",17550902,"43",17550902
+"Census Region 2: Midwest","CENS-R2","Minnesota",27,"224",34070642,"25",34070642
+"Census Region 2: Midwest","CENS-R2","Missouri",29,"164",36957728,"91",36957728
+"Census Region 2: Midwest","CENS-R2","Nebraska",31,"60",11711222,"13",11711222
+"Census Region 2: Midwest","CENS-R2","North Dakota",38,"45",4625583,"Suppressed",4625583
+"Census Region 2: Midwest","CENS-R2","South Dakota",46,"65",5384129,"Suppressed",5384129
+"Census Region 2: Midwest","CENS-R2","",NA,"2068",411492814,"477",411492814
+"Census Region 3: South","CENS-R3","Delaware",10,"15",5981414,"Suppressed",5981414
+"Census Region 3: South","CENS-R3","District of Columbia",11,"16",4141845,"Suppressed",4141845
+"Census Region 3: South","CENS-R3","Florida",12,"91",131147051,"165",131147051
+"Census Region 3: South","CENS-R3","Georgia",13,"177",64588584,"74",64588584
+"Census Region 3: South","CENS-R3","Maryland",24,"129",36654242,"51",36654242
+"Census Region 3: South","CENS-R3","North Carolina",37,"156",63558153,"67",63558153
+"Census Region 3: South","CENS-R3","South Carolina",45,"122",31297775,"76",31297775
+"Census Region 3: South","CENS-R3","Virginia",51,"179",51685358,"55",51685358
+"Census Region 3: South","CENS-R3","West Virginia",54,"31",10710952,"Suppressed",10710952
+"Census Region 3: South","CENS-R3","Alabama",1,"73",29935229,"89",29935229
+"Census Region 3: South","CENS-R3","Kentucky",21,"123",26961184,"32",26961184
+"Census Region 3: South","CENS-R3","Mississippi",28,"57",17759177,"82",17759177
+"Census Region 3: South","CENS-R3","Tennessee",47,"150",41639064,"72",41639064
+"Census Region 3: South","CENS-R3","Arkansas",5,"63",18201411,"88",18201411
+"Census Region 3: South","CENS-R3","Louisiana",22,"68",27742127,"112",27742127
+"Census Region 3: South","CENS-R3","Oklahoma",40,"97",23941096,"58",23941096
+"Census Region 3: South","CENS-R3","Texas",48,"331",177119299,"651",177119299
+"Census Region 3: South","CENS-R3","",NA,"1878",763063961,"1685",763063961
+"Census Region 4: West","CENS-R4","Arizona",4,"172",43938621,"1213",43938621
+"Census Region 4: West","CENS-R4","Colorado",8,"244",34791624,"38",34791624
+"Census Region 4: West","CENS-R4","Idaho",16,"51",11172868,"20",11172868
+"Census Region 4: West","CENS-R4","Montana",30,"91",6571610,"11",6571610
+"Census Region 4: West","CENS-R4","Nevada",32,"86",18768746,"415",18768746
+"Census Region 4: West","CENS-R4","New Mexico",35,"173",12642168,"44",12642168
+"Census Region 4: West","CENS-R4","Utah",49,"63",19753451,"29",19753451
+"Census Region 4: West","CENS-R4","Wyoming",56,"49",3483065,"Suppressed",3483065
+"Census Region 4: West","CENS-R4","Alaska",2,"129",4399803,"Suppressed",4399803
+"Census Region 4: West","CENS-R4","California",6,"326",235669717,"389",235669717
+"Census Region 4: West","CENS-R4","Hawaii",15,"Suppressed",8560256,"Suppressed",8560256
+"Census Region 4: West","CENS-R4","Oregon",41,"136",25369607,"153",25369607
+"Census Region 4: West","CENS-R4","Washington",53,"263",46181454,"142",46181454
+"Census Region 4: West","CENS-R4","",NA,"1789",471302990,"2470",471302990
+"","","",NA,"6860",1977743896,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
+"","","",NA,"",NA,"4852",1984987277
