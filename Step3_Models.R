@@ -56,3 +56,48 @@ summary(fit_a1_nb_fe)
 irr_table(fit_a1_nb_fe, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
   
   
+
+
+### Forest Plot 1
+library(broom)
+library(dplyr)
+library(ggplot2)
+
+coefs <- tidy(fit_a1_nb, conf.int = TRUE, exponentiate = TRUE)
+
+plot_coefs <- coefs %>%
+  filter(grepl("Unemployment_Mean|log_income|Rural_Code", term))
+
+ggplot(plot_coefs, aes(x = estimate, y = term)) +
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed") +
+  scale_x_log10() +
+  labs(
+    x = "Rate ratio (exp(coef))",
+    y = NULL,
+    title = "County Predictors of Weather-Related Mortality"
+  ) +
+  theme_minimal(base_size = 14)
+
+### Forest plot 2
+library(broom)
+library(dplyr)
+library(ggplot2)
+
+coefs <- tidy(fit_a1_nb_fe, conf.int = TRUE, exponentiate = TRUE)
+
+plot_coefs <- coefs %>%
+  filter(grepl("Unemployment_Mean|log_income|Rural_Code", term))
+
+ggplot(plot_coefs, aes(x = estimate, y = term)) +
+  geom_point(size = 2) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed") +
+  scale_x_log10() +
+  labs(
+    x = "Rate ratio (exp(coef))",
+    y = NULL,
+    title = "Adjusted associations (within-state FE model)"
+  ) +
+  theme_minimal(base_size = 14)
