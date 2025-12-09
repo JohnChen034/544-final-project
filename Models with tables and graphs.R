@@ -1,6 +1,8 @@
 library(dplyr)
 library(MASS)     # glm.nb
-library(broom)    # tidy summary
+library(broom)# tidy summary
+library(gtsummary)
+library(gt)
 
 # Overdispersion diagnostic: Pearson Chi-square / df
 overdisp_ratio <- function(fit) {
