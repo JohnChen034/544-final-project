@@ -355,3 +355,4 @@ cat("\n--- Data Prep Summary ---\n")
 cat("1. Final County Count:", nrow(county_full), "\n")
 cat("2. Counties missing Income data (will be dropped in model):", sum(is.na(county_full$Median_Income)), "\n")
 cat("3. Average Death Rate (per 100k):", round(mean(county_full$Death_Rate_100k, na.rm=TRUE), 2), "\n")
+

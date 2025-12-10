@@ -18,9 +18,8 @@ library(purrr)
 library(gt)
 ```
 
-
-Step 1: Data Wrangling and Merging
-```{r}
+Step 1: Data Imputation
+```{r, warning = FALSE, message = FALSE}
 
 # 1. Ensure your working directory is set to the folder containing these files
 file_weather_county      <- "countytotals_extremeweather.csv"
@@ -29,11 +28,195 @@ file_weather_state       <- "statetotals_extremeweather.csv"
 file_unemployment_state  <- "unemployment_statetotals.csv"
 
 # 2. Read Data
-
 weather_county      <- read.csv(file_weather_county)
 unemployment_county <- read.csv(file_unemployment_county)
 weather_state       <- read.csv(file_weather_state)
 unemployment_state  <- read.csv(file_unemployment_state)
+
+
+set.seed(5)
+# state imputation
+weather_state = weather_state %>% filter(!is.na(Population.x))
+regional_counts = weather_state[is.na(weather_state$State.Code), ][1:4, ]
+
+for (region in regional_counts$Census.Region){
+  df = weather_state %>% filter(Census.Region == region, !is.na(State.Code))
+  
+  if (any(is.na(as.integer(df$Total.State.Cold.Deaths)))) {
+    
+    cold_agg <- sum(as.integer(df$Total.State.Cold.Deaths), na.rm = TRUE)
+    
+    regional_cold_sum <- regional_counts %>% 
+      filter(Census.Region == region) %>%  
+      pull(Total.State.Cold.Deaths) %>% 
+      as.integer()
+    
+    d <- regional_cold_sum - cold_agg
+    
+    idx <- which(weather_state$Census.Region == region &
+                   weather_state$Total.State.Cold.Deaths == "Suppressed")
+    
+    k <- length(idx)
+    
+    if (d < k) {
+      weather_state$Total.State.Cold.Deaths[idx] <- 1
+    } else {
+      repeat {
+        x <- sample(1:9, k, replace = TRUE)
+        if (sum(x) == d) break
+      }
+      weather_state$Total.State.Cold.Deaths[idx] <- x
+    }
+  }
+  if (any(is.na(as.integer(df$Total.State.Heat.Deaths)))) {
+    
+    heat_agg <- sum(as.integer(df$Total.State.Heat.Deaths), na.rm = TRUE)
+    
+    regional_heat_sum <- regional_counts %>% 
+      filter(Census.Region == region) %>%  
+      pull(Total.State.Heat.Deaths) %>% 
+      as.integer()
+    
+    d <- regional_heat_sum - heat_agg
+    
+    idx <- which(weather_state$Census.Region == region &
+                   weather_state$Total.State.Heat.Deaths == "Suppressed")
+    
+    k <- length(idx)
+    
+    if (d < k) {
+      weather_state$Total.State.Heat.Deaths[idx] <- 1
+    } else {
+      repeat {
+        x <- sample(1:9, k, replace = TRUE)
+        if (sum(x) == d) break
+      }
+      weather_state$Total.State.Heat.Deaths[idx] <- x
+    }
+  }
+  
+
+}
+
+# weather_county imputation
+regional_counts = weather_state %>% filter(!is.na(State.Code))
+for (region in regional_counts$State){
+  df = weather_county %>% filter(State == region)
+  
+  if (any(is.na(as.integer(df$Cold.Deaths)))) {
+    cold_agg <- sum(as.integer(df$Cold.Deaths), na.rm = TRUE)
+    
+    regional_cold_sum <- regional_counts %>% 
+      filter(State == region) %>%  
+      pull(Total.State.Cold.Deaths) %>% 
+      as.integer()
+    
+    d <- regional_cold_sum - cold_agg
+    
+    idx <- which(weather_county$State == region &
+                   weather_county$Cold.Deaths == "Suppressed")
+    
+    k <- length(idx)
+    
+    if (d < k) {
+      weather_county$Cold.Deaths[idx] <- 1
+    } else {
+      # Start with minimum
+      x <- rep(1, k)
+      remaining <- d - k   # how much left to distribute
+      
+      if (remaining > 0) {
+        for (i in sample(1:k)) {
+          if (remaining == 0) break
+          
+          add_max <- min(8, remaining)  # because 1 -> max 9
+          add <- sample(0:add_max, 1)
+          
+          x[i] <- x[i] + add
+          remaining <- remaining - add
+        }
+      }
+      
+      weather_county$Cold.Deaths[idx] <- x
+    }
+  }
+  if (any(is.na(as.integer(df$Heat.Deaths)))) {
+    
+    heat_agg <- sum(as.integer(df$Heat.Deaths), na.rm = TRUE)
+    
+    regional_heat_sum <- regional_counts %>% 
+      filter(State == region) %>%  
+      pull(Total.State.Heat.Deaths) %>% 
+      as.integer()
+    
+    d <- regional_heat_sum - heat_agg
+    
+    idx <- which(weather_county$State == region &
+                   weather_county$Heat.Deaths == "Suppressed")
+    
+    k <- length(idx)
+    
+    if (d < k) {
+      weather_county$Heat.Deaths[idx] <- 1
+    } else {
+      x <- rep(1, k)
+      remaining <- d - k   
+      
+      if (remaining > 0) {
+        for (i in sample(1:k)) {
+          if (remaining == 0) break
+          
+          add_max <- min(8, remaining)  
+          add <- sample(0:add_max, 1)
+          
+          x[i] <- x[i] + add
+          remaining <- remaining - add
+        }
+      }
+      weather_county$Heat.Deaths[idx] <- x
+    }
+  }
+}
+
+# check Heat and Cold County aggregated deaths and state total
+weather_county %>%
+  mutate(Cold.Deaths = as.integer(Cold.Deaths)) %>%
+  group_by(State) %>%
+  summarize(County_Cold_Sum = sum(Cold.Deaths, na.rm = TRUE)) %>%
+  left_join(
+    regional_counts %>%
+      mutate(Total.State.Cold.Deaths = as.integer(Total.State.Cold.Deaths)) %>%
+      dplyr::select(State, Total.State.Cold.Deaths),
+    by = "State"
+  ) %>%
+  mutate(Diff = Total.State.Cold.Deaths - County_Cold_Sum) %>%
+  filter(Diff != 0)
+weather_county %>%
+  mutate(Heat.Deaths = as.integer(Heat.Deaths)) %>%
+  group_by(State) %>%
+  summarize(County_Heat_Sum = sum(Heat.Deaths, na.rm = TRUE)) %>%
+  left_join(
+    regional_counts %>%
+      mutate(Total.State.Heat.Deaths = as.integer(Total.State.Heat.Deaths)) %>%
+      dplyr::select(State, Total.State.Heat.Deaths),
+    by = "State"
+  ) %>%
+  mutate(Diff = Total.State.Heat.Deaths - County_Heat_Sum) %>%
+  filter(Diff != 0)
+
+
+
+
+
+
+
+```
+
+
+
+Step 2: Data Merging and Cleaning
+```{r}
+
 
 # 3. Clean & Merge County Level Data
 unemployment_county <- unemployment_county %>%
@@ -60,32 +243,7 @@ state_full <- inner_join(weather_state, unemployment_state, by = "State")
 state_full <- state_full %>% 
   select(-Population.x, -Census.Region.Code)
 
-########################################################
-#  Pre-Step 2 Check: Missing Data Proportion
-
-
-# Helper function to calculate missing proportion
-calc_missing_prop <- function(column) {
-  n_missing <- sum(is.na(column) | as.character(column) == "Suppressed")
-  prop <- n_missing / length(column)
-  return(scales::percent(prop, accuracy = 0.1))
-}
-
-cat("--- Missing Data Check ---\n")
-cat("Total Counties:", nrow(county_full), "\n")
-cat("Heat Deaths Missing %:", calc_missing_prop(county_full$Heat.Deaths), "\n")
-cat("Cold Deaths Missing %:", calc_missing_prop(county_full$Cold.Deaths), "\n")
-cat("Median Income Missing %:", 
-    scales::percent(sum(is.na(county_full$Median_Household_Income_2022)) / nrow(county_full), 0.1), "\n")
-```
-
-
-STEP 2: Data Cleaning & Imputation
-```{r, warning = FALSE}
-
-#  Pre-Step 2 Check: Missing Data Proportion
-
-# Helper function to calculate missing proportion
+# Missing Data Proportion
 calc_missing_prop <- function(column) {
   n_missing <- sum(is.na(column) | as.character(column) == "Suppressed")
   prop <- n_missing / length(column)
@@ -99,85 +257,27 @@ cat("Cold Deaths Missing %:", calc_missing_prop(county_full$Cold.Deaths), "\n")
 cat("Median Income Missing %:", 
     scales::percent(sum(is.na(county_full$Median_Household_Income_2022)) / nrow(county_full), 0.1), "\n")
 
-# 1. Helper function: Convert "Suppressed" to NA and ensure numeric type
-clean_numeric <- function(x) {
-  if (is.character(x)) {
-    x <- ifelse(str_trim(x) == "Suppressed", NA, x)
-  }
-  return(as.numeric(x))
-}
-
-
-# 2. Apply cleaning to death columns
+# Data Cleaning
 county_full <- county_full %>%
   mutate(
-    Heat.Deaths = clean_numeric(Heat.Deaths),
-    Cold.Deaths = clean_numeric(Cold.Deaths)
+    Heat.Deaths = as.integer(Heat.Deaths),
+    Cold.Deaths = as.integer(Cold.Deaths)
   )
 
 state_full <- state_full %>%
   mutate(
-    Total.State.Heat.Deaths = clean_numeric(Total.State.Heat.Deaths),
-    Total.State.Cold.Deaths = clean_numeric(Total.State.Cold.Deaths)
+    Total.State.Heat.Deaths = as.integer(Total.State.Heat.Deaths),
+    Total.State.Cold.Deaths = as.integer(Total.State.Cold.Deaths)
   )
-
-# 3. Handle Suppressed State Totals
-# Logic: If State Total is Suppressed (NA), assume 5 (midpoint of 1-9)
-state_full <- state_full %>%
-  mutate(
-    Total.State.Heat.Deaths = ifelse(is.na(Total.State.Heat.Deaths), 5, Total.State.Heat.Deaths),
-    Total.State.Cold.Deaths = ifelse(is.na(Total.State.Cold.Deaths), 5, Total.State.Cold.Deaths)
-  )
-
-# 4. Imputation Logic Function
-impute_deaths <- function(county_df, state_df, death_col_county, death_col_state) {
-  
-  # A. Calculate sum of known counties per state
-  known_sums <- county_df %>%
-    group_by(State) %>%
-    summarize(
-      Known_Sum = sum(.data[[death_col_county]], na.rm = TRUE), 
-      Suppressed_Count = sum(is.na(.data[[death_col_county]]))
-    )
-  
-  # B. Calculate residual deaths to distribute
-  imputation_logic <- state_df %>%
-    select(State, Actual_State_Total = .data[[death_col_state]]) %>%
-    left_join(known_sums, by = "State") %>%
-    mutate(
-      Residual = Actual_State_Total - Known_Sum,
-      Residual = ifelse(Residual < 0, 0, Residual), # Prevent negative residuals
-      Imputed_Value = ifelse(Suppressed_Count > 0, Residual / Suppressed_Count, 0)
-    )
-  
-  # C. Fill NA values in county data
-  county_df_imputed <- county_df %>%
-    left_join(imputation_logic %>% select(State, Imputed_Value), by = "State") %>%
-    mutate(
-      !!death_col_county := ifelse(is.na(.data[[death_col_county]]), 
-                                   Imputed_Value, 
-                                   .data[[death_col_county]])
-    ) %>%
-    select(-Imputed_Value)
-  
-  return(county_df_imputed)
-}
-
-# 5. Run Imputation
-county_full <- impute_deaths(county_full, state_full, "Heat.Deaths", "Total.State.Heat.Deaths")
-county_full <- impute_deaths(county_full, state_full, "Cold.Deaths", "Total.State.Cold.Deaths")
 
 # 6. Create final Outcome Variable
 county_full <- county_full %>%
   mutate(Weather.Deaths = Heat.Deaths + Cold.Deaths)
 
+
 ```
-
-STEP 3: Variable Preparation & EDA
-```{r, warning = FALSE}
-
-# Variable Preparation 
-# A. Calculate Mean Unemployment (2018-2023)
+STEP 3: EDA
+```{r}
 unemployment_cols <- grep("Unemployment_rate_20", names(county_full), value = TRUE)
 
 if(length(unemployment_cols) > 0) {
@@ -185,7 +285,6 @@ if(length(unemployment_cols) > 0) {
   county_full$Unemployment_SD <- apply(county_full[, unemployment_cols], 1, sd, na.rm = TRUE)
 }
 
-# B. Rename Columns for clarity
 if ("Median_Household_Income_2022" %in% names(county_full)) {
   county_full <- county_full %>% rename(Median_Income = Median_Household_Income_2022)
 }
@@ -193,7 +292,7 @@ if ("Rural_Urban_Continuum_Code_2023" %in% names(county_full)) {
   county_full <- county_full %>% rename(Rural_Code = Rural_Urban_Continuum_Code_2023)
 }
 
-# C. Calculate Crude Death Rate (per 100k) for Visualization
+# Crude Death Rate (per 100k) for Visualization
 if (is.character(county_full$Population)) {
   county_full$Population <- as.numeric(gsub(",", "", county_full$Population))
 }
@@ -225,15 +324,15 @@ p2 <- ggplot(county_full, aes(x = Weather.Deaths)) +
 p3 <- ggplot(county_full, aes(x = Median_Income, y = Death_Rate_100k)) +
   geom_point(alpha = 0.3, size = 1, color = "grey60") +
   geom_smooth(method = "gam", color = "blue", fill = "lightblue") +
-  scale_x_log10(labels = scales::dollar) + 
-  coord_cartesian(ylim = c(0, 5)) + 
+  scale_x_log10(labels = scales::dollar) +
+  coord_cartesian(ylim = c(0, 5)) +
   theme_minimal() +
   labs(title = "Fig 3: Median Household Income vs. Death Rate",
        subtitle = "Downward trend implies higher income is associated with lower mortality.",
        x = "Median Household Income 2022 (Log Scale)", y = "Deaths per 100k")
 
 # Figure 4: Rural/Urban Differences
-p4 <- ggplot(county_full %>% filter(!is.na(Rural_Code)), 
+p4 <- ggplot(county_full %>% filter(!is.na(Rural_Code)),
              aes(x = factor(Rural_Code), y = Death_Rate_100k)) +
   geom_boxplot(fill = "#59A14F", outlier.shape = NA) +
   coord_cartesian(ylim = c(0, 3)) +
@@ -269,7 +368,6 @@ p7 <- ggplot(county_full, aes(x = Median_Income, y = Unemployment_Mean)) +
        subtitle = "Strong correlation suggests avoiding both in the same model.",
        x = "Median Income ($)", y = "Mean Unemployment Rate (%)")
 
-# Print Plots
 print(p1)
 print(p2)
 print(p3)
@@ -278,11 +376,14 @@ print(p5)
 print(p6)
 print(p7)
 
-# Final Summary 
 cat("\n--- Data Prep Summary ---\n")
 cat("1. Final County Count:", nrow(county_full), "\n")
 cat("2. Counties missing Income data (will be dropped in model):", sum(is.na(county_full$Median_Income)), "\n")
-cat("3. Average Death Rate (per 100k):", round(mean(county_full$Death_Rate_100k)))
+cat("3. Average Death Rate (per 100k):", round(mean(county_full$Death_Rate_100k, na.rm=TRUE), 2), "\n")
+
+
+
+
 ```
 
 STEP 4: Models and Results
@@ -335,24 +436,6 @@ print(fit_a1_nb_flex)
 #irr_table(fit_a1_nb, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
 
 
-#Aim 1 model with just heat deaths
-fit_a1_nb_heat <- glm.nb(
-  Heat.Deaths ~ Unemployment_Mean + log_income + Rural_Code + offset(log(Population)),
-  data = dat_county
-)
-summary(fit_a1_nb_heat)
-irr_table(fit_a1_nb_heat, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
-
-#Aim 1 model with just cold deaths
-fit_a1_nb_cold <- glm.nb(
-  Cold.Deaths ~ Unemployment_Mean + log_income + Rural_Code + offset(log(Population)),
-  data = dat_county
-)
-summary(fit_a1_nb_cold)
-irr_table(fit_a1_nb_cold, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
-
-
-
 ## ========== Aim 2: County model adjusting for state ==========
 dat_county[["State"]] <- factor(dat_county[["State"]])
 fit_a1_nb_fe <- glm.nb(
@@ -371,97 +454,6 @@ fit_a1_nb_fe_flex <- tbl_regression(fit_a1_nb_fe, exponentiate = TRUE,
 
 print(fit_a1_nb_fe_flex)
 #irr_table(fit_a1_nb_fe, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
-
-#Aim 2 model with just heat deaths
-fit_a1_nb_fe_heat <- glm.nb(
-  Heat.Deaths ~ Unemployment_Mean + log_income + Rural_Code + 
-    factor(State) + offset(log(Population)),
-  data = dat_county
-)
-summary(fit_a1_nb_fe_heat)
-irr_table(fit_a1_nb_fe_heat, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
-
-#Aim 3 model with just cold deaths
-fit_a1_nb_fe_cold <- glm.nb(
-  Cold.Deaths ~ Unemployment_Mean + log_income + Rural_Code + 
-    factor(State) + offset(log(Population)),
-  data = dat_county
-)
-summary(fit_a1_nb_fe_cold)
-irr_table(fit_a1_nb_fe_cold, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
-
-
-
-## ========== State-level main model ==========
-dat_state <- state_full %>%
-  filter(
-    !is.na(Weather.Deaths),
-    !is.na(Population), Population > 0,
-    !is.na(Unemployment_Mean),
-    !is.na(Median_Income), Median_Income > 0
-  ) %>%
-  mutate(log_income = log(Median_Income))
-
-fit_a2_pois <- glm(
-  Weather.Deaths ~ Unemployment_Mean + log_income,
-  family = poisson(link = "log"),
-  offset = log(Population),
-  data   = dat_state
-)
-
-fit_a2_nb <- glm.nb(
-  Weather.Deaths ~ Unemployment_Mean + log_income + offset(log(Population)),
-  data = dat_state
-)
-summary(fit_a2_nb)
-irr_table(fit_a2_nb, keep_regex = "Unemployment_Mean|log_income")
-
-#State-level model adjusting for Census Region
-dat_county[["Census.Region"]] <- factor(dat_county[["Census.Region"]])
-fit_a2_nb_fe <- glm.nb(
-  Weather.Deaths ~ Unemployment_Mean + log_income + factor(Census.Region) +
-    offset(log(Population)),
-  data = dat_state
-)
-summary(fit_a2_nb_fe)
-irr_table(fit_a2_nb_fe, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
-
-
-# Table with main result
-
-models <- list(
-  a1_nb         = fit_a1_nb,
-  a1_nb_heat    = fit_a1_nb_heat,
-  a1_nb_cold    = fit_a1_nb_cold,
-  a1_nb_fe      = fit_a1_nb_fe,
-  a1_nb_fe_heat = fit_a1_nb_fe_heat,
-  a1_nb_fe_cold = fit_a1_nb_fe_cold,
-  a2_nb         = fit_a2_nb,
-  a2_nb_fe      = fit_a2_nb_fe
-)
-
-# Extract estimates into a wide table: rows=models, cols=variables
-tab_irr <- imap_dfr(models, function(m, nm) {
-  broom::tidy(m, conf.int = TRUE, exponentiate = TRUE) %>%
-    transmute(
-      model = nm,
-      term,
-      value = sprintf("%.3f (%.3f, %.3f); p=%.3g", estimate, conf.low, conf.high, p.value)
-    )
-}) %>%
-  pivot_wider(names_from = term, values_from = value)
-
-tab_irr
-
-
-# With certain variables (e.g., key terms)
-keep_terms <- c("Unemployment_Mean", "log_income",
-                paste0("Rural_Code", 2:9))
-
-tab_irr_key <- tab_irr %>%
-  dplyr::select(model, tidyselect::any_of(keep_terms))
-
-tab_irr_key
 
 
 coefs <- tidy(fit_a1_nb, conf.int = TRUE, exponentiate = TRUE)
@@ -499,6 +491,84 @@ ggplot(plot_coefs, aes(x = estimate, y = term)) +
     title = "Adjusted associations (within-state FE model)"
   ) +
   theme_minimal(base_size = 14)
+
+
+```
+
+Additional Exploratory Models
+```{r, warning = FALSE}
+
+#Aim 1 model with just heat deaths
+# fit_a1_nb_heat <- glm.nb(
+#   Heat.Deaths ~ Unemployment_Mean + log_income + Rural_Code + offset(log(Population)),
+#   data = dat_county
+# )
+# summary(fit_a1_nb_heat)
+# irr_table(fit_a1_nb_heat, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
+
+#Aim 1 model with just cold deaths
+# fit_a1_nb_cold <- glm.nb(
+#   Cold.Deaths ~ Unemployment_Mean + log_income + Rural_Code + offset(log(Population)),
+#   data = dat_county
+# )
+# summary(fit_a1_nb_cold)
+# irr_table(fit_a1_nb_cold, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
+
+
+#Aim 2 model with just heat deaths
+# fit_a1_nb_fe_heat <- glm.nb(
+#   Heat.Deaths ~ Unemployment_Mean + log_income + Rural_Code + 
+#     factor(State) + offset(log(Population)),
+#   data = dat_county
+# )
+# summary(fit_a1_nb_fe_heat)
+# irr_table(fit_a1_nb_fe_heat, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
+
+#Aim 3 model with just cold deaths
+# fit_a1_nb_fe_cold <- glm.nb(
+#   Cold.Deaths ~ Unemployment_Mean + log_income + Rural_Code + 
+#     factor(State) + offset(log(Population)),
+#   data = dat_county
+# )
+# summary(fit_a1_nb_fe_cold)
+# irr_table(fit_a1_nb_fe_cold, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
+
+
+
+## State-level main model ==========
+# dat_state <- state_full %>%
+#   filter(
+#     !is.na(Weather.Deaths),
+#     !is.na(Population), Population > 0,
+#     !is.na(Unemployment_Mean),
+#     !is.na(Median_Income), Median_Income > 0
+#   ) %>%
+#   mutate(log_income = log(Median_Income))
+# 
+# fit_a2_pois <- glm(
+#   Weather.Deaths ~ Unemployment_Mean + log_income,
+#   family = poisson(link = "log"),
+#   offset = log(Population),
+#   data   = dat_state
+# )
+# 
+# fit_a2_nb <- glm.nb(
+#   Weather.Deaths ~ Unemployment_Mean + log_income + offset(log(Population)),
+#   data = dat_state
+# )
+# summary(fit_a2_nb)
+# irr_table(fit_a2_nb, keep_regex = "Unemployment_Mean|log_income")
+# 
+# #State-level model adjusting for Census Region
+# dat_county[["Census.Region"]] <- factor(dat_county[["Census.Region"]])
+# fit_a2_nb_fe <- glm.nb(
+#   Weather.Deaths ~ Unemployment_Mean + log_income + factor(Census.Region) +
+#     offset(log(Population)),
+#   data = dat_state
+# )
+# summary(fit_a2_nb_fe)
+# irr_table(fit_a2_nb_fe, keep_regex = "Unemployment_Mean|log_income|Rural_Code")
+
 
 
 ```
