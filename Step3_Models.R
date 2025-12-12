@@ -101,3 +101,5 @@ ggplot(plot_coefs, aes(x = estimate, y = term)) +
     title = "Adjusted associations (within-state FE model)"
   ) +
   theme_minimal(base_size = 14)
+
+detach("package:MASS", unload = TRUE)

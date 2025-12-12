@@ -18,7 +18,7 @@ weather_state       <- read.csv(file_weather_state)
 unemployment_state  <- read.csv(file_unemployment_state)
 
 
-set.seed(5)
+set.seed(544)
 # state imputation
 weather_state = weather_state %>% filter(!is.na(Population.x))
 regional_counts = weather_state[is.na(weather_state$State.Code), ][1:4, ]
@@ -105,22 +105,6 @@ for (region in regional_counts$State){
     if (d < k) {
       weather_county$Cold.Deaths[idx] <- 1
     } else {
-      # # Start with minimum
-      # x <- rep(1, k)
-      # remaining <- d - k   # how much left to distribute
-      # 
-      # if (remaining > 0) {
-      #   for (i in sample(1:k)) {
-      #     if (remaining == 0) break
-      #     
-      #     add_max <- min(8, remaining)  # because 1 -> max 9
-      #     add <- sample(0:add_max, 1)
-      #     
-      #     x[i] <- x[i] + add
-      #     remaining <- remaining - add
-      #   }
-      # }
-      # x
       x <- rep(1, k)
       remaining <- d - k
       
@@ -158,15 +142,12 @@ for (region in regional_counts$State){
       x <- rep(1, k)
       remaining <- d - k   
       
-      if (remaining > 0) {
-        for (i in sample(1:k)) {
-          if (remaining == 0) break
-          
-          add_max <- min(8, remaining)  
-          add <- sample(0:add_max, 1)
-          
-          x[i] <- x[i] + add
-          remaining <- remaining - add
+      while (remaining > 0) {
+        i <- sample(1:k, 1)
+        
+        if (x[i] < 9) {
+          x[i] <- x[i] + 1
+          remaining <- remaining - 1
         }
       }
       weather_county$Heat.Deaths[idx] <- x
